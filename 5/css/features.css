@@ -1,0 +1,304 @@
+/* =========================================================
+   ANIT USTASI — Menü sekmeleri, harita, zaman çizelgesi,
+   koleksiyon, sinematik, bilgi kartı, modlar
+   ========================================================= */
+
+.menu-panel { max-width: 1060px; }
+
+/* ---------------- Sekmeler ---------------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 0 16px;
+}
+.tabs button { border-radius: 999px; padding: 8px 16px; }
+.tabs button.active {
+  background: linear-gradient(180deg, var(--gold-2), var(--gold));
+  border-color: #9c7020;
+  box-shadow: 0 3px 0 #8a6219;
+}
+.tab-intro { text-align: center; opacity: 0.8; margin: 0 auto 14px; max-width: 640px; font-size: 14px; }
+.tab-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.segmented { display: inline-flex; background: var(--paper-2); border-radius: 12px; padding: 4px; gap: 4px; }
+.segmented button { border: none; background: transparent; padding: 7px 14px; border-radius: 9px; }
+.segmented button.active { background: #fffaf0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
+
+.switch { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; cursor: pointer; }
+.switch input { display: none; }
+.switch .track {
+  width: 42px; height: 24px; border-radius: 999px; background: #cdbf9f; position: relative; transition: background 0.2s;
+}
+.switch .track::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(18px); }
+
+.level-card .card-thumb {
+  position: absolute; right: 8px; bottom: 6px; width: 58px; height: 58px; object-fit: contain;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
+}
+
+/* ---------------- Dünya haritası ---------------- */
+.world-map {
+  position: relative;
+  height: min(62vh, 520px);
+  border-radius: 16px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #a9d0e0, #7fb2c9);
+  border: 3px solid #d9c49a;
+}
+.map-svg { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.map-svg:active { cursor: grabbing; }
+.land path { fill: #ecdcb6; stroke: #b9a47a; stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.water path { fill: #94c2d6; stroke: #7fb2c9; stroke-width: 0.5; vector-effect: non-scaling-stroke; }
+.graticule line { stroke: rgba(255, 255, 255, 0.35); stroke-width: 0.5; vector-effect: non-scaling-stroke; }
+.pin { cursor: pointer; }
+.pin-dot { stroke: #fff; stroke-width: 2; }
+.pin-halo { fill: rgba(255, 255, 255, 0.35); transition: transform 0.15s; }
+.pin:hover .pin-halo { transform: scale(1.5); fill: rgba(255, 230, 150, 0.6); }
+.pin-num { fill: #fff; font: 800 8px Nunito, sans-serif; text-anchor: middle; pointer-events: none; }
+.pin-thumb { filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35)); transition: transform 0.15s; transform-origin: 0 -30px; }
+.pin:hover .pin-thumb { transform: scale(1.15); }
+.pin-shadow { fill: rgba(0, 0, 0, 0.25); }
+.pin.done .pin-dot { stroke: var(--gold-2); stroke-width: 2.5; }
+
+.map-tools { position: absolute; top: 10px; left: 10px; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 20px); }
+.map-tools button { padding: 6px 10px; font-size: 13px; border-radius: 10px; background: rgba(247, 239, 224, 0.92); }
+.map-tools .zoom { width: 34px; padding: 6px 0; }
+.map-legend {
+  position: absolute; left: 10px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;
+  background: rgba(247, 239, 224, 0.9); border-radius: 10px; padding: 6px 10px; font-size: 12px; font-weight: 700;
+}
+.map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+.map-card {
+  position: absolute;
+  width: 220px;
+  background: #fffaf0;
+  border: 2px solid #d9c49a;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 4px;
+  opacity: 0; pointer-events: none; transform: translateY(6px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.map-card.show { opacity: 1; pointer-events: auto; transform: none; }
+.map-card .badge { position: static; align-self: flex-start; }
+.map-card b { font-family: 'Cinzel', serif; font-size: 16px; }
+.map-card .sub { font-size: 12px; opacity: 0.75; }
+.map-card .card-stars { font-size: 16px; color: #d8cbb0; }
+.map-card .card-stars .on { color: var(--gold-2); }
+.map-card button { margin-top: 4px; padding: 7px 10px; }
+
+/* ---------------- Meydan okuma listesi ---------------- */
+.challenge-list { display: flex; flex-direction: column; gap: 8px; }
+.challenge-row {
+  display: grid; grid-template-columns: 1.6fr 1.2fr 1.3fr auto; align-items: center; gap: 10px;
+  background: #fffaf0; border-radius: 12px; padding: 10px 14px; border: 2px solid rgba(43, 33, 24, 0.08);
+}
+.challenge-row .title { font-family: 'Cinzel', serif; font-weight: 800; margin-right: 8px; }
+.badge-inline { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; color: #fff; text-transform: uppercase; }
+.challenge-row .goals { font-weight: 800; font-size: 14px; }
+.challenge-row .best { color: #d8cbb0; font-size: 16px; }
+.challenge-row .best .on { color: var(--gold-2); }
+.challenge-row .best small { color: var(--ink); opacity: 0.7; font-size: 12px; margin-left: 4px; }
+.challenge-row button { padding: 8px 14px; }
+
+/* ---------------- Zaman çizelgesi ---------------- */
+.timeline { overflow-x: auto; padding: 8px 4px 14px; }
+.timeline-track {
+  position: relative; display: flex; gap: 6px; min-width: max-content; height: 330px; padding: 0 20px; align-items: center;
+}
+.timeline-track::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 4px; background: linear-gradient(90deg, #c8962f, #8a3b1e); border-radius: 2px;
+}
+.timeline-item {
+  position: relative; width: 104px; height: 100%; padding: 0; border: none; background: transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px;
+}
+.timeline-item.down { justify-content: flex-end; }
+.timeline-item:hover { transform: none; background: transparent; }
+.timeline-item .tl-dot {
+  position: absolute; top: calc(50% - 7px); width: 14px; height: 14px; border-radius: 50%; background: #fffaf0; border: 3px solid var(--gold);
+}
+.timeline-item.done .tl-dot { background: var(--gold-2); }
+.tl-pic {
+  width: 84px; height: 84px; border-radius: 14px; background: var(--paper-2); display: grid; place-items: center;
+  font: 800 30px Cinzel, serif; color: #c9b88f; border: 2px dashed #d9c49a; transition: transform 0.15s;
+}
+.timeline-item.done .tl-pic { background: #fffaf0; border-style: solid; }
+.timeline-item:hover .tl-pic { transform: translateY(-3px) scale(1.05); }
+.tl-pic img { width: 100%; height: 100%; object-fit: contain; }
+.tl-year { font: 800 13px Cinzel, serif; color: var(--accent); }
+.tl-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.2; max-width: 100px; }
+.timeline-item.up { padding-bottom: 175px; }
+.timeline-item.down { padding-top: 175px; }
+
+/* ---------------- Koleksiyon (müze) ---------------- */
+.museum-total { text-align: center; font-weight: 800; font-size: 16px; }
+.museum-level h3 { font-family: 'Cinzel', serif; margin: 18px 0 8px; color: var(--accent); }
+.museum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.museum-card {
+  background: #fffaf0; border-radius: 12px; padding: 10px 12px; border-left: 5px solid var(--gold);
+  font-size: 13px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+.museum-card b { display: block; margin-bottom: 4px; }
+.museum-card p { margin: 0; opacity: 0.85; }
+.museum-card.locked { border-left-color: #d8cbb0; opacity: 0.55; }
+
+/* ---------------- Bilgi kartı (parça yerleşince) ---------------- */
+.part-card {
+  position: fixed; left: 16px; bottom: 120px; width: min(340px, calc(100vw - 32px));
+  background: var(--paper); border: 3px solid var(--gold); border-radius: 16px; padding: 12px 16px;
+  box-shadow: var(--shadow); z-index: 8;
+  transform: translateX(calc(-100% - 30px)); transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.part-card.show { transform: none; }
+.pc-head { font-weight: 800; color: var(--gold); font-size: 13px; display: flex; justify-content: space-between; }
+.pc-head small { color: var(--ink); opacity: 0.6; }
+.pc-level { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+.part-card b { font-family: 'Cinzel', serif; font-size: 18px; display: block; margin: 2px 0 4px; }
+.part-card p { margin: 0; font-size: 14px; }
+
+/* ---------------- Puan, seri, uyarı ---------------- */
+.stat.score em { font-style: normal; font-size: 12px; font-weight: 800; color: #d35400; min-height: 14px; }
+.stat.warn b { color: var(--bad); animation: pulse 0.5s infinite alternate; }
+@keyframes pulse { to { transform: scale(1.15); } }
+#floatLayer { position: fixed; left: 50%; top: 32%; z-index: 9; pointer-events: none; }
+.float-text {
+  position: absolute; left: 0; transform: translateX(-50%); white-space: nowrap;
+  font: 800 22px Nunito, sans-serif; color: #fff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  animation: floatUp 1.4s ease-out forwards;
+}
+.float-text.combo { color: #ffd257; font-size: 26px; }
+.float-text.streak { top: 34px; color: #ff9f43; font-size: 24px; }
+.float-text.broken { color: #ffb4a6; font-size: 18px; }
+@keyframes floatUp { from { opacity: 0; translate: 0 10px; } 15% { opacity: 1; } to { opacity: 0; translate: 0 -60px; } }
+
+/* ---------------- Usta modu önizleme ---------------- */
+.preview {
+  position: fixed; right: 12px; top: 84px; z-index: 5; width: 150px;
+  background: rgba(247, 239, 224, 0.92); border-radius: 14px; padding: 8px; box-shadow: var(--shadow); text-align: center;
+}
+.preview span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
+.preview img { width: 100%; display: block; }
+
+/* ---------------- Sinematik ---------------- */
+.cinema { position: fixed; inset: 0; z-index: 12; pointer-events: none; }
+.cinema .bar { position: absolute; left: 0; right: 0; height: 13vh; background: #0d0a08; transition: transform 0.6s ease; }
+.cinema .top { top: 0; transform: translateY(-100%); }
+.cinema .bottom { bottom: 0; transform: translateY(100%); display: grid; place-items: center; padding: 0 6vw; }
+.cinema.on .bar { transform: none; }
+#cinemaText {
+  margin: 0; color: #f7efe0; font-size: clamp(14px, 2vw, 20px); text-align: center; max-width: 900px; opacity: 0;
+}
+#cinemaText.in { animation: subIn 0.6s ease forwards; }
+#cinemaText.title { font-family: 'Cinzel', serif; font-size: clamp(20px, 3vw, 32px); color: var(--gold-2); }
+@keyframes subIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cinema .skip {
+  position: absolute; right: 18px; bottom: calc(13vh + 12px); pointer-events: auto;
+  background: rgba(247, 239, 224, 0.85); padding: 6px 14px; border-radius: 999px;
+}
+
+/* ---------------- Kazanma / başarısız ---------------- */
+.win-score { font-size: 15px; }
+.win-score b { color: var(--accent); }
+.win-cards { font-size: 13px; font-weight: 700; color: var(--gold); margin: 0; }
+.fail-icon { font-size: 54px; }
+
+@media (max-width: 700px) {
+  .challenge-row { grid-template-columns: 1fr auto; }
+  .challenge-row .goals, .challenge-row .best { grid-column: 1 / -1; }
+  .preview { width: 110px; top: 150px; }
+  .part-card { bottom: 130px; }
+  .world-map { height: 60vh; }
+}
+
+/* Izgara içindeki panel, geniş içerik (zaman çizelgesi) yüzünden taşmasın */
+.overlay > .panel { min-width: 0; max-width: min(1060px, 100%); }
+.tab-page, .timeline { min-width: 0; max-width: 100%; }
+
+/* ---------------- Harita (gerçek ülkeler, kümeler) ---------------- */
+.world-map { background: radial-gradient(ellipse at 50% 35%, #b7dbe9 0%, #8dbfd4 60%, #6fa6bf 100%); }
+.land .country { fill: #efe2c2; stroke: #c9b48a; stroke-width: 0.5; vector-effect: non-scaling-stroke; transition: fill 0.15s; }
+.land .country.has-site { fill: #f3d58f; stroke: #b88d3a; }
+.land .country.has-site:hover { fill: #f7c766; }
+.map-svg.fallback .land .country { fill: #ecdcb6; }
+.graticule .equator { stroke: rgba(255, 255, 255, 0.6); stroke-dasharray: 3 3; }
+.sea-labels text {
+  fill: rgba(30, 70, 95, 0.55); font-family: 'Cinzel', serif; font-style: italic; font-weight: 600;
+  text-anchor: middle; letter-spacing: 0.15em; pointer-events: none;
+}
+.cluster { cursor: pointer; }
+.cluster-ring { fill: rgba(138, 59, 30, 0.22); } /* sabit halka: sonsuz animasyon haritayı sürekli yeniden çizdiriyordu */
+.cluster-dot { fill: var(--accent); stroke: #fff; stroke-width: 2.5; }
+.cluster-num { fill: #fff; font: 800 13px Nunito, sans-serif; text-anchor: middle; pointer-events: none; }
+.cluster-done { fill: #2b2118; font: 800 10px Nunito, sans-serif; text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.map-legend .cl { background: var(--accent); }
+.map-progress {
+  position: absolute; right: 10px; top: 10px; background: rgba(247, 239, 224, 0.92); border-radius: 999px;
+  padding: 6px 12px; font-weight: 800; font-size: 13px; color: var(--accent);
+}
+.map-country {
+  position: absolute; right: 10px; bottom: 10px; background: rgba(43, 33, 24, 0.82); color: #fff4dc;
+  border-radius: 10px; padding: 5px 10px; font-weight: 800; font-size: 13px; opacity: 0; transition: opacity 0.15s; pointer-events: none;
+}
+.map-country.show { opacity: 1; }
+.map-tip {
+  position: absolute; max-width: 260px; background: rgba(43, 33, 24, 0.88); color: #fff4dc; border-radius: 10px;
+  padding: 6px 10px; font-size: 12px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity 0.12s;
+}
+.map-tip.show { opacity: 1; }
+.map-card { width: 270px; flex-direction: row; gap: 10px; align-items: stretch; padding: 10px; }
+.mc-pic { width: 84px; flex: none; background: var(--paper-2); border-radius: 10px; display: grid; place-items: center; }
+.mc-pic img { width: 80px; height: 80px; object-fit: contain; }
+.mc-pic.locked img { filter: grayscale(1) brightness(0.35) contrast(0.6); opacity: 0.55; }
+.mc-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mc-body b { font-family: 'Cinzel', serif; font-size: 15px; line-height: 1.15; }
+.mc-row { display: flex; gap: 6px; margin-top: 4px; }
+.mc-row button { padding: 6px 10px; margin: 0; }
+.mc-row .primary { flex: 1; }
+
+/* SVG içindeki ölçek animasyonları kendi merkezlerinde olsun (kaymasın) */
+.cluster-ring, .pin-halo { transform-box: fill-box; transform-origin: center; }
+.pin-thumb { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* Harita GPU katmanında: hareket sırasında yeniden çizilmeden büyütülür/kaydırılır */
+.map-svg { transform-origin: 0 0; will-change: transform; contain: strict; }
+
+/* ---------- Kıta / zorluk filtresi ve gruplu liste ---------- */
+.level-filters { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip-label { font-size: 13px; font-weight: 800; opacity: 0.7; margin-right: 2px; }
+.chip {
+  padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  background: var(--paper-2); border: 2px solid transparent; box-shadow: none; white-space: nowrap;
+}
+.chip.active { background: #fffaf0; border-color: var(--accent); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
+.chip-kolay { border-left: 6px solid #3f8a4a; }
+.chip-orta { border-left: 6px solid #c8962f; }
+.chip-zor { border-left: 6px solid #b23a2a; }
+.chip.done { background: #f3ead2; }
+.continent-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  margin: 18px 2px 10px; padding-bottom: 6px; border-bottom: 2px solid rgba(0, 0, 0, 0.08); font-size: 18px;
+}
+.level-groups > .continent-head:first-child { margin-top: 0; }
+.ch-count { font-size: 12px; font-weight: 700; opacity: 0.65; }
+.empty-note { display: block; padding: 30px; text-align: center; opacity: 0.7; }
+.map-list { margin-top: 12px; }
+.map-list-group .continent-head { margin: 12px 2px 8px; font-size: 16px; }
+.map-list-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.pin.dim { opacity: 0.22; }
+.pin.dim .pin-thumb { display: none; }

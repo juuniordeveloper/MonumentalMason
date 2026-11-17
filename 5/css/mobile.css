@@ -1,0 +1,120 @@
+/* =========================================================
+   ANIT USTASI — Mobil ve dokunmatik düzen
+   Telefon (dar ekran), yatay telefon (alçak ekran) ve
+   çentikli ekranlar için güvenli alan boşlukları.
+   ========================================================= */
+
+/* Çentik / ana ekran çubuğu olan cihazlarda kenar boşlukları */
+#hud {
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+}
+#controls { bottom: max(14px, env(safe-area-inset-bottom)); }
+
+/* Dokunmatikte çift dokunma yakınlaştırması ve gri vurgu olmasın */
+button, .level-card, .timeline-item, .pin, .cluster { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.is-touch button:hover { transform: none; }
+
+/* ---------------- Telefon (dikey) ---------------- */
+@media (max-width: 640px) {
+  #hud { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; gap: 6px; flex-direction: column; align-items: stretch; }
+  .hud-left { padding: 6px 8px; gap: 8px; border-radius: 12px; }
+  .level-name { font-size: 15px; }
+  .level-meta { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64vw; }
+  .hud-right { padding: 5px 6px; gap: 4px; justify-content: space-between; border-radius: 12px; }
+  .stat { min-width: 0; flex: 1; }
+  .stat span { font-size: 9px; }
+  .stat b { font-size: 14px; }
+  .icon-btn { width: 34px; height: 34px; font-size: 16px; flex: none; }
+
+  #controls { gap: 6px; width: calc(100vw - 16px); }
+  .hint-text { font-size: 12px; padding: 5px 12px; }
+  .rotate-bar { padding: 6px; }
+  .rotate-bar button { width: 68px; height: 50px; }
+
+  #toast { top: 122px; font-size: 14px; }
+  #floatLayer { top: 27%; }
+  .float-text { font-size: 18px; }
+  .float-text.combo { font-size: 20px; }
+  .float-text.streak { font-size: 17px; top: 28px; }
+
+  /* Bilgi kartı üstten iner; alttaki parçaları kapatmasın */
+  .part-card {
+    left: 8px; right: 8px; width: auto; top: 122px; bottom: auto; padding: 10px 12px;
+    transform: translateY(calc(-100% - 140px));
+  }
+  .part-card.show { transform: none; }
+  .part-card b { font-size: 16px; }
+  .part-card p { font-size: 13px; }
+
+  .preview { top: auto; bottom: calc(118px + env(safe-area-inset-bottom)); right: 8px; width: 96px; padding: 5px; }
+
+  .overlay { padding: max(10px, env(safe-area-inset-top)) 10px 10px; align-items: start; }
+  .panel { padding: 16px; border-radius: 16px; }
+  .menu-panel h1 { font-size: 30px; }
+  .tagline { font-size: 13px; margin-bottom: 12px; }
+
+  .tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: none; padding: 7px 12px; font-size: 13px; }
+  .tab-tools { gap: 8px; }
+  .segmented button { padding: 6px 10px; font-size: 13px; }
+
+  .level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .level-card { min-height: 108px; padding: 10px 10px 8px; }
+  .level-card .num { font-size: 11px; }
+  .level-card .title { font-size: 14px; padding-right: 0; }
+  .level-card .sub { font-size: 11px; }
+  .level-card .card-stars { font-size: 15px; }
+  .level-card .card-thumb { width: 42px; height: 42px; }
+  .badge { top: 8px; right: 8px; font-size: 9px; padding: 2px 6px; }
+
+  .world-map { height: 62vh; border-width: 2px; }
+  .map-tools button { padding: 5px 8px; font-size: 12px; }
+  .map-legend { font-size: 10px; gap: 6px; padding: 4px 8px; right: 10px; }
+  .map-progress { top: auto; bottom: 54px; right: 10px; font-size: 11px; }
+  .map-country { display: none; }
+  .map-card { width: min(270px, calc(100% - 16px)); }
+
+  .timeline-item { width: 88px; }
+  .tl-pic { width: 70px; height: 70px; }
+  .museum-grid { grid-template-columns: 1fr 1fr; }
+  .museum-card { font-size: 12px; }
+
+  .card h2 { font-size: 24px; }
+  .facts { font-size: 13px; padding-left: 26px; }
+  .row button { flex: 1 1 30%; min-width: 0; padding: 10px 8px; }
+
+  .cinema .bar { height: 16vh; }
+  .cinema .skip { bottom: calc(16vh + 8px); }
+}
+
+@media (max-width: 340px) {
+  .level-grid, .museum-grid { grid-template-columns: 1fr; }
+  .stat span { display: none; }
+}
+
+/* ---------------- Yatay telefon (alçak ekran) ---------------- */
+@media (max-height: 480px) and (orientation: landscape) {
+  #hud { flex-direction: row; top: max(6px, env(safe-area-inset-top)); }
+  .level-meta { display: none; }
+  .stat span { display: none; }
+  .hint-text { display: none; }
+  .rotate-bar button { height: 40px; width: 60px; }
+  .part-card { top: auto; bottom: 8px; left: max(8px, env(safe-area-inset-left)); right: auto; width: 300px; transform: translateX(calc(-100% - 30px)); }
+  .part-card.show { transform: none; }
+  .preview { top: 64px; bottom: auto; width: 90px; }
+  .overlay { align-items: start; }
+  .world-map { height: 72vh; }
+  .cinema .bar { height: 12vh; }
+  .cinema .skip { bottom: calc(12vh + 6px); }
+}
+
+/* Kıta / zorluk çipleri telefonda daha sıkı */
+@media (max-width: 600px) {
+  .level-filters { gap: 6px; margin-bottom: 10px; }
+  .chip-row { gap: 5px; }
+  .chip { padding: 4px 9px; font-size: 12px; }
+  .continent-head { font-size: 16px; margin-top: 14px; }
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b2118" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Anıt Ustası — Tarihi Yapı Bulmacası</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/features.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
+
+  <!-- Three.js'i CDN'den modül olarak yüklemek için importmap -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 3D sahne buraya çizilir -->
+  <div id="scene"></div>
+  <div id="floatLayer"></div>
+
+  <!-- ÜST BİLGİ ÇUBUĞU -->
+  <header id="hud" class="hidden">
+    <div class="hud-left">
+      <button id="btnMenu" class="icon-btn" title="Menü">☰</button>
+      <div>
+        <div id="levelName" class="level-name">—</div>
+        <div id="levelMeta" class="level-meta">—</div>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="stat"><span>Parça</span><b id="statPieces">0/0</b></div>
+      <div class="stat"><span id="statErrorsLabel">Hata</span><b id="statErrors">0</b></div>
+      <div class="stat"><span id="statTimeLabel">Süre</span><b id="statTime">0:00</b></div>
+      <div class="stat score"><span>Puan</span><b id="statScore">0</b><em id="statStreak"></em></div>
+      <button id="btnTime" class="icon-btn" title="Gündüz / gün batımı / gece">☀️</button>
+      <button id="btnSound" class="icon-btn" title="Ses aç / kapat">🔊</button>
+      <button id="btnInfo" class="icon-btn" title="Tarihçe">i</button>
+    </div>
+  </header>
+
+  <!-- Usta modu: tamamlanmış eserin resmi -->
+  <aside id="preview" class="preview hidden">
+    <span>Hedef yapı</span>
+    <img id="previewImg" alt="Tamamlanmış yapının resmi" />
+  </aside>
+
+  <!-- ALT KONTROL ÇUBUĞU -->
+  <footer id="controls" class="hidden">
+    <div id="hintText" class="hint-text">Bir parçaya tıkla ya da sürükleyip yuvasına bırak</div>
+    <div class="rotate-bar">
+      <button id="btnHint" title="İpucu (H)">💡<small>İpucu</small></button>
+      <button id="btnReset" title="Bölümü yeniden başlat (R)">↺<small>Baştan</small></button>
+    </div>
+  </footer>
+
+  <!-- Mesaj baloncuğu ve bilgi kartı -->
+  <div id="toast"></div>
+  <aside id="partCard" class="part-card">
+    <div class="pc-head">📜 Yeni bilgi kartı <small id="cardCount"></small></div>
+    <div id="cardLevel" class="pc-level"></div>
+    <b id="cardName"></b>
+    <p id="cardFact"></p>
+  </aside>
+
+  <!-- Bitiş sinematiği -->
+  <section id="cinema" class="cinema hidden">
+    <div class="bar top"></div>
+    <div class="bar bottom">
+      <p id="cinemaText"></p>
+    </div>
+    <button id="btnSkip" class="skip">Geç ▸</button>
+  </section>
+
+  <!-- ANA MENÜ -->
+  <section id="menu" class="overlay">
+    <div class="panel menu-panel">
+      <h1>Anıt Ustası</h1>
+      <p class="tagline">Dağınık 3B parçaları doğru yuvalarına, doğru sırayla yerleştir ve tarihin büyük yapılarını yeniden ayağa kaldır.</p>
+
+      <nav id="menuTabs" class="tabs">
+        <button data-tab="levels" class="active">🏛 Bölümler</button>
+        <button data-tab="challenge">⏱ Meydan Okuma</button>
+        <button data-tab="timeline">📜 Zaman Çizelgesi</button>
+        <button data-tab="museum">🖼 Koleksiyon</button>
+      </nav>
+
+      <div id="tab-levels" class="tab-page">
+        <div class="tab-tools">
+          <div id="viewToggle" class="segmented">
+            <button data-view="cards" class="active">▦ Kartlar</button>
+            <button data-view="map">🗺 Dünya Haritası</button>
+          </div>
+          <label class="switch" title="Yuvalar gizlenir; yapıyı resme bakarak kurarsın">
+            <input type="checkbox" id="masterToggle" />
+            <span class="track"></span>
+            <span>Usta modu</span>
+          </label>
+        </div>
+        <div id="levelFilters" class="level-filters"></div>
+        <div id="levelGrid" class="level-groups"></div>
+        <div id="worldMap" class="world-map hidden"></div>
+        <div id="mapList" class="map-list hidden"></div>
+      </div>
+
+      <div id="tab-challenge" class="tab-page hidden">
+        <p class="tab-intro">Süre ve hamle sınırı içinde yapıyı bitir. Süre dolarsa ya da hamle hakkın biterse kaybedersin.
+          Her yerleştirme denemesi (doğru ya da yanlış) bir hamle sayılır.</p>
+        <div id="challengeList" class="challenge-list"></div>
+      </div>
+
+      <div id="tab-timeline" class="tab-page hidden">
+        <p id="timelineInfo" class="tab-intro"></p>
+        <div id="timeline" class="timeline"></div>
+      </div>
+
+      <div id="tab-museum" class="tab-page hidden">
+        <div id="museum" class="museum"></div>
+      </div>
+
+      <div class="how">
+        <b>Nasıl oynanır?</b>
+        <ul>
+          <li><b>Tıkla:</b> parçayı seç → yarı saydam yuvasına tıkla. <b>Sürükle:</b> parçayı tutup yuvasının üstüne bırak.</li>
+          <li>Parçalar <b>alttan üste</b> yerleşir; havada taş durmaz! Doğru yuvadaki parça kendiliğinden döner.</li>
+          <li>Arka arkaya doğru yerleştirmeler <b>seri</b> yapar ve puanı katlar (en fazla ×3).</li>
+          <li><b>Zor</b> bölümlerde hazır yuvalar gösterilmez; <b>Usta modunda</b> yuvalar hiç görünmez.</li>
+          <li><b>Kamera:</b> sürükle = döndür, tekerlek = yakınlaş, sağ tık = kaydır. ☀️ düğmesiyle gece/gündüz.</li>
+          <li><b>Telefonda:</b> tek parmak = kamerayı döndür, iki parmak = yakınlaş ve kaydır; parçayı parmağınla sürükle.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- BÖLÜM TANITIM / TARİHÇE KARTI -->
+  <section id="intro" class="overlay hidden">
+    <div class="panel card">
+      <div class="card-era" id="introEra"></div>
+      <h2 id="introName"></h2>
+      <div class="card-place" id="introPlace"></div>
+      <p id="introText"></p>
+      <ul id="introFacts" class="facts"></ul>
+      <button id="btnStart" class="primary">Başla</button>
+    </div>
+  </section>
+
+  <!-- KAZANMA EKRANI -->
+  <section id="win" class="overlay hidden">
+    <div class="panel card">
+      <div class="stars" id="winStars"></div>
+      <h2 id="winTitle">Tamamlandı!</h2>
+      <p id="winStats" class="win-stats"></p>
+      <p id="winScore" class="win-score"></p>
+      <p id="winCards" class="win-cards"></p>
+      <ul id="winFacts" class="facts"></ul>
+      <div class="row">
+        <button id="btnWinMenu">Menü</button>
+        <button id="btnReplay">Tekrar Oyna</button>
+        <button id="btnNext" class="primary">Sonraki Yapı →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEYDAN OKUMA: BAŞARISIZ -->
+  <section id="fail" class="overlay hidden">
+    <div class="panel card">
+      <div class="fail-icon">⌛</div>
+      <h2 id="failReason">Süre doldu!</h2>
+      <p id="failStats" class="win-stats"></p>
+      <div class="row">
+        <button id="btnFailMenu">Menü</button>
+        <button id="btnFailRetry" class="primary">Tekrar Dene</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bölüm verileri (bölgelere göre) -->
+  <script src="js/levels/helpers.js"></script>
+  <script src="js/levels/ancient.js"></script>
+  <script src="js/levels/istanbul.js"></script>
+  <script src="js/levels/anatolia.js"></script>
+  <script src="js/levels/world.js"></script>
+  <script src="js/levels/cathedrals.js"></script>
+  <script src="js/levels/hard-a.js"></script>
+  <script src="js/levels/hard-b.js"></script>
+  <script src="js/levels/continents-a.js"></script>
+  <script src="js/levels/continents-b.js"></script>
+  <script src="js/levels/continents-c.js"></script>
+  <script src="js/levels/order.js"></script>
+  <script src="js/levels/meta.js"></script>
+  <script src="js/levels/part-info.js"></script>
+  <script src="js/levels/part-info-continents.js"></script>
+
+  <!-- Çevre kiti ve bölüm çevreleri -->
+  <script src="js/env/kit-core.js"></script>
+  <script src="js/env/kit-nature.js"></script>
+  <script src="js/env/kit-city.js"></script>
+  <script src="js/env/env-common.js"></script>
+  <script src="js/env/env-ancient.js"></script>
+  <script src="js/env/env-istanbul.js"></script>
+  <script src="js/env/env-anatolia.js"></script>
+  <script src="js/env/env-world.js"></script>
+  <script src="js/env/env-hard.js"></script>
+  <script src="js/env/env-continents-a.js"></script>
+  <script src="js/env/env-continents-b.js"></script>
+
+  <!-- Oyun motoru -->
+  <script src="js/game/device.js"></script>
+  <script src="js/game/storage.js"></script>
+  <script src="js/game/audio.js"></script>
+  <script src="js/game/geometry.js"></script>
+  <script src="js/game/thumbnails.js"></script>
+  <script src="js/game/effects.js"></script>
+  <script src="js/game/scene.js"></script>
+  <script src="js/game/daynight.js"></script>
+  <script src="js/game/collection.js"></script>
+  <script src="js/game/modes.js"></script>
+  <script src="js/game/cinematic.js"></script>
+  <script src="js/game/world-shapes.js"></script>
+  <script src="js/game/worldmap-geo.js"></script>
+  <script src="js/game/worldmap.js"></script>
+  <script src="js/game/menu.js"></script>
+  <script src="js/game/ambient.js"></script>
+  <script src="js/game/level.js"></script>
+  <script src="js/game/interaction.js"></script>
+  <script src="js/game/ui.js"></script>
+  <script src="js/game/main.js"></script>
+</body>
+</html>
